@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>게시판 · Developer Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #7fff6e;
+      --accent2: #4ecdc4;
+      --text: #e8e8f0;
+      --muted: #5a5a72;
+      --card: #13131c;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* Glow blob */
+    .glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(127,255,110,0.06) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      pointer-events: none;
+      z-index: 0;
+      animation: driftGlow 10s ease-in-out infinite alternate;
+    }
+    @keyframes driftGlow {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(-60px, 80px) scale(1.15); }
+    }
+
+    /* Layout */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 32px 120px;
+    }
+
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.1s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* Page header */
+    .page-header {
+      margin-bottom: 48px;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 6vw, 56px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.2s;
+    }
+    .page-header h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .page-header p {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.3s;
+    }
+
+    /* Board list */
+    .board-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 64px;
+    }
+
+    .post-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      transition: border-color 0.3s, transform 0.3s;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .post-card:nth-child(1) { animation-delay: 0.4s; }
+    .post-card:nth-child(2) { animation-delay: 0.5s; }
+    .post-card:nth-child(3) { animation-delay: 0.6s; }
+    .post-card:nth-child(4) { animation-delay: 0.7s; }
+    .post-card:nth-child(5) { animation-delay: 0.8s; }
+    .post-card:hover {
+      border-color: rgba(127,255,110,0.3);
+      transform: translateY(-4px);
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .post-meta .author {
+      color: var(--accent2);
+    }
+    .post-meta .separator {
+      opacity: 0.3;
+    }
+
+    .post-card h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .post-card .preview {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 32px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="wrapper">
+    <a href="index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      홈으로
+    </a>
+
+    <div class="page-header">
+      <h1><em>게시판</em></h1>
+      <p>개발 일지와 기술 이야기를 기록합니다.</p>
+    </div>
+
+    <div class="board-list">
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="author">김개발</span>
+          <span class="separator">·</span>
+          <time>2025.12.28</time>
+        </div>
+        <h3>React 19에서 달라진 서버 컴포넌트 패턴 정리</h3>
+        <p class="preview">React 19가 정식 릴리즈되면서 서버 컴포넌트의 사용 방식이 크게 바뀌었습니다. 기존 클라이언트 중심 아키텍처에서 서버 우선 접근으로 전환하면서 겪은 경험을 공유합니다.</p>
+      </article>
+
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="author">박엔지니어</span>
+          <span class="separator">·</span>
+          <time>2025.12.15</time>
+        </div>
+        <h3>Docker Compose로 로컬 개발 환경 한 번에 구축하기</h3>
+        <p class="preview">팀원마다 다른 개발 환경 때문에 발생하는 문제를 Docker Compose로 해결한 과정입니다. PostgreSQL, Redis, MinIO까지 한 번의 명령어로 띄우는 설정을 단계별로 안내합니다.</p>
+      </article>
+
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="author">이풀스택</span>
+          <span class="separator">·</span>
+          <time>2025.11.30</time>
+        </div>
+        <h3>TypeScript 5.4 새 기능: NoInfer 타입 유틸리티 활용법</h3>
+        <p class="preview">TypeScript 5.4에서 추가된 NoInfer 유틸리티 타입을 실무에 어떻게 적용할 수 있는지 예제와 함께 살펴봅니다. 제네릭 함수의 타입 추론을 더 정밀하게 제어할 수 있습니다.</p>
+      </article>
+
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="author">정디자인</span>
+          <span class="separator">·</span>
+          <time>2025.11.12</time>
+        </div>
+        <h3>CSS Container Query로 진짜 반응형 컴포넌트 만들기</h3>
+        <p class="preview">미디어 쿼리의 한계를 넘어, 컨테이너 쿼리를 활용한 컴포넌트 단위 반응형 디자인 전략을 소개합니다. 재사용 가능한 카드 레이아웃 패턴도 함께 다룹니다.</p>
+      </article>
+
+      <article class="post-card">
+        <div class="post-meta">
+          <span class="author">최백엔드</span>
+          <span class="separator">·</span>
+          <time>2025.10.25</time>
+        </div>
+        <h3>Node.js에서 구조화된 로깅 시스템 설계하기</h3>
+        <p class="preview">운영 환경에서 효율적으로 디버깅하기 위한 구조화된 로깅 시스템을 Pino와 함께 구축한 경험을 공유합니다. 로그 레벨 전략부터 JSON 포맷 설계까지 다룹니다.</p>
+      </article>
+    </div>
+  </div>
+
+  <footer>
+    crafted with care · 2025
+  </footer>
+</body>
+</html>
